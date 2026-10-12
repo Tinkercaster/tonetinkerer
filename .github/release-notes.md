@@ -31,4 +31,9 @@ Then restart your DAW (or rescan plugins).
 - Automatic input level and an adaptive noise gate: no setup needed.
 - An Advanced view with every detail: gate, compressor, wah, overdrive, four neural amp models (NAM), cabinets, EQ, chorus, delay, reverb. Load your own `.nam` captures and cabinet IRs.
 
+## Known limitations
+
+- The macOS build is not yet notarized by Apple (see the one-line Terminal command above).
+- The Windows and Linux builds are new: they build and package correctly, but have not been played on real machines yet. Please [open an issue](https://github.com/Tinkercaster/tonetinkerer/issues) if anything misbehaves.
+
 Free and open source under the MIT License.
