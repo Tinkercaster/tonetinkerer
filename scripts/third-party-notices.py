@@ -125,7 +125,7 @@ def main():
         notices.append(f"| {p['name']} | {p['version']} | {p.get('license') or 'see licence file'} |")
     notices += ["", "## Fonts", "", "| Font | Licence |", "|---|---|"]
     notices += [f"| {name} | {lic} |" for name, lic, _ in EXTRA]
-    (out / "THIRD_PARTY_NOTICES.md").write_text("\n".join(notices) + "\n")
+    (out / "THIRD_PARTY_NOTICES.md").write_text("\n".join(notices) + "\n", encoding="utf-8")
 
     bar = "=" * 78
     texts = [
@@ -140,21 +140,21 @@ def main():
             texts.append(f"Licence: {p.get('license')} (the crate ships no licence file; "
                          "see the standard texts at the end).")
         for f in files:
-            texts += [f"--- {f.name}", f.read_text(errors="replace").rstrip(), ""]
+            texts += [f"--- {f.name}", f.read_text(encoding="utf-8", errors="replace").rstrip(), ""]
         texts.append("")
     for name, lic, path in EXTRA:
-        texts += [bar, f"{name}  ({lic})", bar, path.read_text().rstrip(), ""]
+        texts += [bar, f"{name}  ({lic})", bar, path.read_text(encoding="utf-8").rstrip(), ""]
     # Standard texts for crates that name a licence without shipping its file.
     apache = next(
-        (f.read_text(errors="replace") for p in rows for f in licence_files(p)
-         if "apache" in f.name.lower() and "Version 2.0" in f.read_text(errors="replace")),
+        (f.read_text(encoding="utf-8", errors="replace") for p in rows for f in licence_files(p)
+         if "apache" in f.name.lower() and "Version 2.0" in f.read_text(encoding="utf-8", errors="replace")),
         None,
     )
     texts += [bar, "Standard licence texts (for crates above that ship no licence file)", bar,
               "--- MIT", MIT_TEXT, ""]
     if apache:
         texts += ["--- Apache-2.0", apache.rstrip(), ""]
-    (out / "THIRD_PARTY_LICENSES.txt").write_text("\n".join(texts) + "\n")
+    (out / "THIRD_PARTY_LICENSES.txt").write_text("\n".join(texts) + "\n", encoding="utf-8")
     print(f"{len(rows)} crates -> {out}/THIRD_PARTY_NOTICES.md, THIRD_PARTY_LICENSES.txt")
 
 
