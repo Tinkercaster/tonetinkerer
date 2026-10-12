@@ -1,0 +1,14 @@
+[package]
+name = "tonetinkerer-render"
+description = "Offline renderer, training-data generator and analysis tools for ToneTinkerer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+tonetinkerer-dsp = { path = "../tonetinkerer-dsp" }
+hound.workspace = true
+rustfft = "6.2"
+nam-rs.workspace = true
+serde_json.workspace = true

@@ -1,0 +1,21 @@
+[package]
+name = "tonetinkerer-dsp"
+description = "Real-time DSP signal chain for the ToneTinkerer guitar amplifier simulator"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+nam-rs.workspace = true
+fft-convolver.workspace = true
+hound.workspace = true
+serde.workspace = true
+realfft = "3.5"
+
+[dev-dependencies]
+assert_no_alloc.workspace = true
+
+[[bench]]
+name = "chain"
+harness = false

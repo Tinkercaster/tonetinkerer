@@ -1,0 +1,21 @@
+/target
+/tools/nam-train/.venv
+/tools/nam-train/work
+*.pyc
+.DS_Store
+/render-out
+/reference-songs
+
+# Reference recordings and anything derived from them never enter the
+# repository (AGENTS.md rule 8). Audio is ignored everywhere, except the
+# project's own generated cabinet IRs.
+*.mp3
+*.flac
+*.m4a
+*.aac
+*.ogg
+*.opus
+*.aif
+*.aiff
+*.wav
+!/assets/irs/*.wav

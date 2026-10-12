@@ -1,0 +1,53 @@
+[workspace]
+resolver = "3"
+members = [
+  "crates/tonetinkerer-dsp",
+  "crates/tonetinkerer-plugin",
+  "crates/tonetinkerer-render",
+  "xtask",
+]
+default-members = ["crates/tonetinkerer-dsp", "crates/tonetinkerer-plugin", "crates/tonetinkerer-render"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+license = "MIT"
+publish = false
+
+[workspace.dependencies]
+# nice-plug: the maintained community fork of NIH-plug (RustAudio, Codeberg).
+# Not published on crates.io yet, so it is pinned to an exact commit.
+nice-plug = { git = "https://codeberg.org/RustAudio/nice-plug.git", rev = "e60b5db09d8606c3dc3e93f982847a00bce17325", default-features = false }
+nice-plug-egui = { git = "https://codeberg.org/RustAudio/nice-plug.git", rev = "e60b5db09d8606c3dc3e93f982847a00bce17325" }
+nice-plug-xtask = { git = "https://codeberg.org/RustAudio/nice-plug.git", rev = "e60b5db09d8606c3dc3e93f982847a00bce17325" }
+egui = { version = "0.36.1", default-features = false, features = ["default_fonts"] }
+nam-rs = "0.4.0"
+fft-convolver = "0.3.0"
+hound = "3.5"
+rtrb = "0.4.0"
+atomic_float = "1.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+parking_lot = "0.12"
+assert_no_alloc = "1.1"
+rfd = { version = "0.15", default-features = false, features = ["xdg-portal"] }
+
+[profile.dev]
+opt-level = 1
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
+strip = "symbols"
+
+# Tests run optimized: the DSP and NAM inference are far too slow at opt-level 0
+# for the long offline renders the test-suite performs.
+[profile.test]
+opt-level = 3
+debug-assertions = true
+
+[profile.profiling]
+inherits = "release"
+debug = true
+strip = "none"

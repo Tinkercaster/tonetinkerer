@@ -1,0 +1,5 @@
+[toolchain]
+channel = "1.99.0"
+components = ["rustfmt", "clippy"]
+# Windows target for cross-building the Windows VST3/CLAP from WSL2 or macOS.
+targets = ["x86_64-pc-windows-msvc"]
