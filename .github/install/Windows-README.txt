@@ -13,4 +13,9 @@ with input monitoring on, ToneTinkerer as its first effect. 48 kHz and a
 buffer of 64-128 samples work best. Pick a sound and play: the input level
 sets itself during your first seconds of playing.
 
+Next time, the easiest way to install or update is one line
+(Terminal on Mac/Linux, PowerShell on Windows):
+
+   irm https://raw.githubusercontent.com/Tinkercaster/tonetinkerer/main/scripts/install.ps1 | iex
+
 Free and open source (MIT): https://github.com/Tinkercaster/tonetinkerer

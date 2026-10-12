@@ -62,9 +62,25 @@ part of this project.
 
 ## Download and install
 
-Get the latest version from **[Releases](https://github.com/Tinkercaster/tonetinkerer/releases/latest)**:
-no building needed. Each download has the VST3 and CLAP plugins and a
-`README.txt` with the steps.
+**Easiest: one line.** It downloads the latest release and puts both plugins
+(VST3 and CLAP) in the right folders.
+
+- **Mac or Linux**: open Terminal, paste, press Enter:
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/Tinkercaster/tonetinkerer/main/scripts/install.sh | bash
+  ```
+- **Windows**: open PowerShell, paste, press Enter (Windows asks once for
+  administrator rights, because plugins live in Program Files):
+  ```powershell
+  irm https://raw.githubusercontent.com/Tinkercaster/tonetinkerer/main/scripts/install.ps1 | iex
+  ```
+
+Then restart your DAW (or rescan plugins). In REAPER it appears as
+"VST3: ToneTinkerer (GuitarWiring)" and "CLAP: ToneTinkerer".
+
+**Or download it yourself** from
+**[Releases](https://github.com/Tinkercaster/tonetinkerer/releases/latest)**.
+Each download has both plugins and a `README.txt` with the steps.
 
 | Your computer | Download | Copy the plugins to |
 |---|---|---|
@@ -72,15 +88,12 @@ no building needed. Each download has the VST3 and CLAP plugins and a
 | Windows 10/11 (64-bit) | `ToneTinkerer-Windows.zip` | `C:\Program Files\Common Files\VST3\` and `...\CLAP\` |
 | Linux (x86_64) | `ToneTinkerer-Linux.tar.gz` | `~/.vst3/` and `~/.clap/` |
 
-On a Mac, this build is not yet notarized by Apple, so run this once in
-Terminal after copying:
+The plugins are not signed by Apple, so on a Mac a manually downloaded copy
+needs this once in Terminal (the one-line installer above doesn't):
 
 ```bash
 xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/ToneTinkerer.vst3 ~/Library/Audio/Plug-Ins/CLAP/ToneTinkerer.clap
 ```
-
-Then restart your DAW (or rescan plugins). In REAPER it appears as
-"VST3: ToneTinkerer (GuitarWiring)" and "CLAP: ToneTinkerer".
 
 ### Build it yourself
 
