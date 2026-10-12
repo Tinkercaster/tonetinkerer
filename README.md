@@ -1,33 +1,34 @@
 # ToneTinkerer
 
-**Plug in, pick what you play, play.** A free guitar amp simulator plugin
-(VST3 + CLAP) by [GuitarWiring](https://guitarwiring.app/): *we tinker so you
-don't have to.*
+A free guitar amp simulator plugin (VST3 and CLAP) by
+[GuitarWiring](https://guitarwiring.app/). Plug in, pick what you play, and
+play. We tinker so you don't have to.
 
 ![ToneTinkerer: pick a sound, turn a few plain-language knobs, play](docs/images/simple.png)
 
-ToneTinkerer is built around one idea: play first, and only configure if
-something is missing.
+The idea is to play first and only change settings when something is missing.
 
-- **23 ready-to-play sounds** across Clean, Blues & Jazz, Rock, Metal, Lead and
-  Ambient. Each one is a complete rig (pedals, amp, cabinet, effects), level-matched
-  so switching sounds never jumps in volume.
-- **Seven plain-language knobs** instead of dozens: Gain, Body, Bright, Mids,
-  Sustain, Space, Volume. The centre is the sound as designed; each knob moves
-  several hidden settings at once.
-- **One-tap fixes** for what you hear: *Too thin, Too muddy, Too harsh, Too dull,
-  Too boxy, Gets lost in the mix, Needs more sustain, More dirt, Cleaner, Too
-  washy, Too dry.*
-- **No level setup**: the plugin learns how hot your guitar arrives during
-  your first seconds of playing and sets the input for you, so every sound
-  (clean or high gain) plays at the same volume on any interface. A noise
-  gate learns your input's own hiss and closes just above it.
-- **Advanced view** with every detail (noise gate, compressor, wah, overdrive,
-  four neural amp models, cabinet IRs, EQ, chorus, delay, reverb) for people who
-  like to tinker.
+There are 23 sounds across Clean, Blues & Jazz, Rock, Metal, Lead and Ambient.
+Each one is a complete rig with pedals, amp, cabinet and effects, and they are
+level-matched, so switching sounds never jumps in volume.
+
+The main screen has seven knobs with plain names: Gain, Body, Bright, Mids,
+Sustain, Space and Volume. In the centre position a knob leaves the sound as
+designed, and turning it moves several settings underneath at once. Below them
+are one-tap fixes named after what you hear: Too thin, Too muddy, Too harsh,
+Too dull, Too boxy, Lost in the mix, More sustain, More dirt, Cleaner, Too
+washy and Too dry.
+
+You don't set a level. During your first seconds of playing the plugin
+measures how hot your guitar arrives and sets the input to match, so clean and
+high-gain sounds play at the same volume on any interface. The noise gate
+measures your input's hiss the same way and closes just above it.
+
+The Advanced view has every setting: noise gate, compressor, wah, overdrive,
+four neural amp models, cabinet IRs, EQ, chorus, delay and reverb.
 
 <details>
-<summary><b>Advanced view</b>: every detail of the rig, for people who like to tinker</summary>
+<summary>Advanced view screenshot</summary>
 
 ![ToneTinkerer Advanced view: gate, compressor, wah, overdrive, neural amp, cabinet, chorus, delay, reverb](docs/images/advanced.png)
 
@@ -71,15 +72,15 @@ part of this project.
 
 ## Download and install
 
-**Easiest: one line.** It downloads the latest release and puts both plugins
-(VST3 and CLAP) in the right folders.
+The quickest way is one line. It downloads the latest release and puts both
+plugins (VST3 and CLAP) in the right folders.
 
-- **Mac or Linux**: open Terminal, paste, press Enter:
+- Mac or Linux: open Terminal, paste this and press Enter.
   ```bash
   curl -fsSL https://raw.githubusercontent.com/Tinkercaster/tonetinkerer/main/scripts/install.sh | bash
   ```
-- **Windows**: open PowerShell, paste, press Enter (Windows asks once for
-  administrator rights, because plugins live in Program Files):
+- Windows: open PowerShell, paste this and press Enter. Windows asks once for
+  administrator rights, because plugins live in Program Files.
   ```powershell
   irm https://raw.githubusercontent.com/Tinkercaster/tonetinkerer/main/scripts/install.ps1 | iex
   ```
@@ -87,8 +88,8 @@ part of this project.
 Then restart your DAW (or rescan plugins). In REAPER it appears as
 "VST3: ToneTinkerer (GuitarWiring)" and "CLAP: ToneTinkerer".
 
-**Or download it yourself** from
-**[Releases](https://github.com/Tinkercaster/tonetinkerer/releases/latest)**.
+You can also download a release yourself from
+[Releases](https://github.com/Tinkercaster/tonetinkerer/releases/latest).
 Each download has both plugins and a `README.txt` with the steps.
 
 | Your computer | Download | Copy the plugins to |
@@ -97,8 +98,8 @@ Each download has both plugins and a `README.txt` with the steps.
 | Windows 10/11 (64-bit) | `ToneTinkerer-Windows.zip` | `C:\Program Files\Common Files\VST3\` and `...\CLAP\` |
 | Linux (x86_64) | `ToneTinkerer-Linux.tar.gz` | `~/.vst3/` and `~/.clap/` |
 
-The plugins are not signed by Apple, so on a Mac a manually downloaded copy
-needs this once in Terminal (the one-line installer above doesn't):
+The plugins are not signed by Apple. On a Mac, a copy you downloaded by hand
+needs this command once in Terminal. The one-line installer doesn't need it.
 
 ```bash
 xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/ToneTinkerer.vst3 ~/Library/Audio/Plug-Ins/CLAP/ToneTinkerer.clap
@@ -112,32 +113,34 @@ cp -R target/bundled/ToneTinkerer.vst3 ~/Library/Audio/Plug-Ins/VST3/
 cp -R target/bundled/ToneTinkerer.clap ~/Library/Audio/Plug-Ins/CLAP/
 ```
 
-Or build a macOS installer: `scripts/build-macos-pkg.sh` -> `target/installer/ToneTinkerer.pkg`
-(unsigned unless `SIGN_APP` / `SIGN_PKG` name your Developer ID certificates;
-notarization steps are in the script). Releases are built by
-[.github/workflows/release.yml](.github/workflows/release.yml) whenever a
-`v*` tag is pushed.
+`scripts/build-macos-pkg.sh` builds a macOS installer at
+`target/installer/ToneTinkerer.pkg`. It is unsigned unless `SIGN_APP` and
+`SIGN_PKG` name your Developer ID certificates, and the script has the
+notarization steps. Releases come from
+[.github/workflows/release.yml](.github/workflows/release.yml), which runs when
+a `v*` tag is pushed.
 
 ## Playing through it
 
-Works with any audio interface:
+Any audio interface works.
 
-1. Guitar into the interface's instrument (Hi-Z) input.
-2. In the DAW: a track with that input, record-armed, input monitoring on,
-   ToneTinkerer as its first effect. Use **48 kHz** and a buffer of 64-128 samples.
+1. Plug the guitar into the interface's instrument (Hi-Z) input.
+2. In the DAW, make a track with that input, record-arm it, turn input
+   monitoring on and add ToneTinkerer as its first effect. 48 kHz with a buffer
+   of 64 to 128 samples works best.
 3. Pick a sound and play. The input level sets itself during your first
    seconds of playing. If something is missing, turn a knob or tap a fix.
 
-To use one device for input and another for output on macOS (e.g. an
-interface in, laptop speakers out), create an Aggregate Device in Audio MIDI
-Setup and select it in the DAW.
+On macOS you can use one device for input and another for output, for example
+an interface in and laptop speakers out. Create an Aggregate Device in Audio
+MIDI Setup and select it in the DAW.
 
 ## Your own amps, cabinets and artwork
 
-- **Custom amp**: Advanced → "Load .nam…" loads any NAM capture.
-- **Custom cabinet**: Advanced → "Load IR…" loads any impulse-response `.wav`.
-- **Skin**: put artwork at `assets/skin/background.png` (1120x700 or larger)
-  and rebuild; it is drawn behind the interface.
+In the Advanced view, "Load .nam…" loads any NAM capture as the amp and "Load
+IR…" loads any impulse-response `.wav` as the cabinet. To change the
+background, put artwork at `assets/skin/background.png` (1120x700 or larger)
+and rebuild.
 
 ## Windows (including WSL2 development)
 
@@ -151,9 +154,9 @@ scripts/build-windows.sh            # -> target/bundled-windows/ToneTinkerer.{vs
 
 Copy the results to `C:\Program Files\Common Files\VST3` and `...\CLAP`. A plugin
 compiled natively inside WSL2 is a Linux plugin and won't load in a Windows DAW,
-so always use the cross-build. The Windows build is verified to compile, export
-the VST3 and CLAP entry points and import only DLLs that ship with Windows
-10/11; it has not yet been played on a Windows machine.
+so use the cross-build. The Windows build compiles, exports the VST3 and CLAP
+entry points and imports only DLLs that ship with Windows 10 and 11. Nobody has
+played through it on a Windows machine yet.
 
 ## Development
 
@@ -173,6 +176,6 @@ cargo run --release -p tonetinkerer-plugin --features standalone --bin tonetinke
 ## License
 
 ToneTinkerer is open source under the [MIT License](LICENSE). Third-party
-components keep their own licences (all permissive; see
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)); the bundled Inter font is
+components keep their own licences, all of them permissive (see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)). The bundled Inter font is
 under the SIL Open Font License 1.1.
