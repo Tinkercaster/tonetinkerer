@@ -26,7 +26,9 @@ impl GuiContextInner for NoHost {
         PluginApi::Clap
     }
     unsafe fn raw_begin_set_parameter(&self, _: ParamPtr) {}
-    unsafe fn raw_set_parameter_normalized(&self, _: ParamPtr, _: f32) {}
+    unsafe fn raw_set_parameter_normalized(&self, param: ParamPtr, normalized: f32) {
+        unsafe { param._internal_set_normalized_value(normalized) };
+    }
     unsafe fn raw_end_set_parameter(&self, _: ParamPtr) {}
     fn get_state(&self) -> PluginState {
         unimplemented!("not used by the editor")
@@ -42,15 +44,19 @@ struct Texture {
 
 /// Render a few frames of the editor and return the last one (RGBA, premultiplied → straight).
 fn render(view: View, genre: Genre) -> image::RgbaImage {
-    render_with(view, genre, |_| {})
+    render_with(view, genre, |_, _| {})
 }
 
-fn render_with(view: View, genre: Genre, prep: impl Fn(&mut ToneEditor)) -> image::RgbaImage {
+fn render_with(
+    view: View,
+    genre: Genre,
+    prep: impl Fn(&mut ToneEditor, &nice_plug::prelude::ParamSetter),
+) -> image::RgbaImage {
     let plugin = ToneTinkerer::default();
     let mut editor = ToneEditor::headless(plugin.params.clone(), plugin.shared.clone(), view, genre);
-    prep(&mut editor);
     let gui = GuiContext::new(Arc::new(NoHost));
     let setter = gui.param_setter();
+    prep(&mut editor, &setter);
     let ctx = egui::Context::default();
     editor.init(&ctx);
 
@@ -176,7 +182,7 @@ fn play_screen_renders_for_every_genre() {
 
 #[test]
 fn advanced_screen_renders() {
-    let img = render_with(View::Advanced, Genre::Lead, |e| {
+    let img = render_with(View::Advanced, Genre::Lead, |e, _| {
         e.shared.noise_floor_db.store(-74.0, std::sync::atomic::Ordering::Relaxed)
     });
     assert_has_content(&img, "advanced");
@@ -186,8 +192,44 @@ fn advanced_screen_renders() {
 #[test]
 fn guitar_setup_result_renders() {
     for (name, msg) in [("setup-none", "No guitar heard"), ("setup-ok", "✓  Level set (+3.5 dB)")] {
-        let img = render_with(View::Play, Genre::Clean, |e| e.setup_msg = Some(msg.to_owned()));
+        let img = render_with(View::Play, Genre::Clean, |e, _| e.setup_msg = Some(msg.to_owned()));
         assert_has_content(&img, name);
         img.save(out_dir().join(format!("play-{name}.png"))).unwrap();
+    }
+}
+
+/// The README screenshots (docs/images/simple.png, advanced.png): a lead
+/// sound with a few knobs moved, as in a session that has been playing for a
+/// while. Run with `cargo test -p tonetinkerer-plugin readme_screenshots -- --ignored`.
+#[test]
+#[ignore]
+fn readme_screenshots() {
+    use std::sync::atomic::Ordering;
+    let session = |e: &mut ToneEditor, setter: &nice_plug::prelude::ParamSetter| {
+        let preset = tonetinkerer_dsp::presets::PRESETS
+            .iter()
+            .find(|p| p.name == "Singing Lead")
+            .unwrap();
+        crate::play::apply_sound(setter, &e.params, preset);
+        for (p, v) in [(&e.params.m_gain, 0.25), (&e.params.m_bright, -0.2), (&e.params.m_space, 0.4)] {
+            setter.set_parameter(p, v);
+        }
+        let s = &e.shared;
+        s.sample_rate.store(48_000.0, Ordering::Relaxed);
+        s.latency.store(12, Ordering::Relaxed);
+        s.noise_floor_db.store(-82.0, Ordering::Relaxed);
+        s.auto_level_db.store(8.0, Ordering::Relaxed);
+        s.level_learned.store(true, Ordering::Relaxed);
+        s.input_peak.store(0.3, Ordering::Relaxed);
+        s.output_peak_l.store(0.45, Ordering::Relaxed);
+        s.output_peak_r.store(0.42, Ordering::Relaxed);
+    };
+    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/images");
+    std::fs::create_dir_all(&dir).unwrap();
+    for (view, name) in [(View::Play, "simple.png"), (View::Advanced, "advanced.png")] {
+        let img = render_with(view, Genre::Lead, session);
+        assert_has_content(&img, name);
+        let small = image::imageops::resize(&img, 1600, 1000, image::imageops::FilterType::Lanczos3);
+        small.save(dir.join(name)).unwrap();
     }
 }

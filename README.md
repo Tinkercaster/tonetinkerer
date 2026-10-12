@@ -4,6 +4,8 @@
 (VST3 + CLAP) by [GuitarWiring](https://guitarwiring.app/): *we tinker so you
 don't have to.*
 
+![ToneTinkerer: pick a sound, turn a few plain-language knobs, play](docs/images/simple.png)
+
 ToneTinkerer is built around one idea: play first, and only configure if
 something is missing.
 
@@ -23,6 +25,13 @@ something is missing.
 - **Advanced view** with every detail (noise gate, compressor, wah, overdrive,
   four neural amp models, cabinet IRs, EQ, chorus, delay, reverb) for people who
   like to tinker.
+
+<details>
+<summary><b>Advanced view</b>: every detail of the rig, for people who like to tinker</summary>
+
+![ToneTinkerer Advanced view: gate, compressor, wah, overdrive, neural amp, cabinet, chorus, delay, reverb](docs/images/advanced.png)
+
+</details>
 
 Under the hood: Neural Amp Modeler inference ([nam-rs](https://crates.io/crates/nam-rs)),
 partitioned-convolution cabinets, [nice-plug](https://codeberg.org/RustAudio/nice-plug)
