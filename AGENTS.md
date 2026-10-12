@@ -90,9 +90,9 @@ circuit exceeds 0.05. Training works on Apple-silicon GPUs (MPS) and CUDA
 
 ## Licences
 
-After changing dependencies, regenerate THIRD_PARTY_NOTICES.md and
-THIRD_PARTY_LICENSES.txt (crate list and texts from `cargo metadata`); the
-installer ships both.
+After changing dependencies, run `scripts/third-party-notices.py` to
+regenerate THIRD_PARTY_NOTICES.md and THIRD_PARTY_LICENSES.txt (all release
+platforms). Every release download gets its own per-platform copy.
 
 ## Windows builds
 

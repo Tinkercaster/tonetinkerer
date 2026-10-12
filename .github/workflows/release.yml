@@ -37,7 +37,8 @@ jobs:
           # Ad-hoc signature: required for plugins to load on Apple silicon.
           codesign --force --deep --sign - "$out/ToneTinkerer.vst3" "$out/ToneTinkerer.clap"
           lipo -info "$out/ToneTinkerer.vst3/Contents/MacOS/ToneTinkerer"
-          cp LICENSE THIRD_PARTY_NOTICES.md THIRD_PARTY_LICENSES.txt "$out/"
+          cp LICENSE "$out/"
+          python3 scripts/third-party-notices.py --target aarch64-apple-darwin --target x86_64-apple-darwin --out "$out"
           cp .github/install/macOS-README.txt "$out/README.txt"
           ditto -c -k --keepParent "$out" "$out.zip"
       - uses: actions/upload-artifact@v4
@@ -62,7 +63,8 @@ jobs:
           New-Item -ItemType Directory -Force $out | Out-Null
           Copy-Item -Recurse target/bundled/ToneTinkerer.vst3 $out/
           Copy-Item target/bundled/ToneTinkerer.clap $out/
-          Copy-Item LICENSE, THIRD_PARTY_NOTICES.md, THIRD_PARTY_LICENSES.txt $out/
+          Copy-Item LICENSE $out/
+          python scripts/third-party-notices.py --target x86_64-pc-windows-msvc --out $out
           Copy-Item .github/install/Windows-README.txt $out/README.txt
           Compress-Archive -Path $out -DestinationPath "$out.zip"
       - uses: actions/upload-artifact@v4
@@ -93,7 +95,8 @@ jobs:
           out=ToneTinkerer-Linux
           mkdir -p "$out"
           cp -R target/bundled/ToneTinkerer.vst3 target/bundled/ToneTinkerer.clap "$out/"
-          cp LICENSE THIRD_PARTY_NOTICES.md THIRD_PARTY_LICENSES.txt "$out/"
+          cp LICENSE "$out/"
+          python3 scripts/third-party-notices.py --target x86_64-unknown-linux-gnu --out "$out"
           cp .github/install/Linux-README.txt "$out/README.txt"
           tar czf "$out.tar.gz" "$out"
       - uses: actions/upload-artifact@v4
