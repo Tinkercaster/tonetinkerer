@@ -1,0 +1,34 @@
+**ToneTinkerer** is a free guitar amp simulator plugin (VST3 + CLAP) by [GuitarWiring](https://guitarwiring.app/): plug in, pick what you play, play.
+
+## Download
+
+| Your computer | File |
+|---|---|
+| Mac (Apple silicon or Intel) | **ToneTinkerer-macOS.zip** |
+| Windows 10/11 (64-bit) | **ToneTinkerer-Windows.zip** |
+| Linux (x86_64) | **ToneTinkerer-Linux.tar.gz** |
+
+Each download contains the VST3 and CLAP plugins and a `README.txt` with the install steps.
+
+## Install in one minute
+
+**Mac**: copy `ToneTinkerer.vst3` to `~/Library/Audio/Plug-Ins/VST3/` and `ToneTinkerer.clap` to `~/Library/Audio/Plug-Ins/CLAP/`. This build is not yet notarized by Apple, so run this once in Terminal:
+
+```
+xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/ToneTinkerer.vst3 ~/Library/Audio/Plug-Ins/CLAP/ToneTinkerer.clap
+```
+
+**Windows**: copy the `ToneTinkerer.vst3` folder to `C:\Program Files\Common Files\VST3\` and `ToneTinkerer.clap` to `C:\Program Files\Common Files\CLAP\`.
+
+**Linux**: copy `ToneTinkerer.vst3` to `~/.vst3/` and `ToneTinkerer.clap` to `~/.clap/`.
+
+Then restart your DAW (or rescan plugins).
+
+## What's inside
+
+- 23 ready-to-play sounds across Clean, Blues & Jazz, Rock, Metal, Lead and Ambient, level-matched.
+- Seven plain-language knobs (Gain, Body, Bright, Mids, Sustain, Space, Volume) and one-tap fixes ("Too thin", "Too muddy", ...).
+- Automatic input level and an adaptive noise gate: no setup needed.
+- An Advanced view with every detail: gate, compressor, wah, overdrive, four neural amp models (NAM), cabinets, EQ, chorus, delay, reverb. Load your own `.nam` captures and cabinet IRs.
+
+Free and open source under the MIT License.

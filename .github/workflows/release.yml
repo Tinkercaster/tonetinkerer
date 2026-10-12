@@ -1,0 +1,120 @@
+# Builds ready-to-use plugins for macOS, Windows and Linux.
+# - Push a tag like v0.1.0: builds everything and publishes a GitHub Release.
+# - Run it by hand (Actions -> Release -> Run workflow): builds only, the
+#   zips appear as workflow artifacts (for testing).
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  macos:
+    name: macOS (Apple silicon + Intel)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: |
+          rustup show
+          rustup target add aarch64-apple-darwin x86_64-apple-darwin
+      - uses: Swatinem/rust-cache@v2
+      - name: Build universal VST3 + CLAP
+        run: cargo xtask bundle-universal tonetinkerer-plugin --release
+      - name: Sign (ad hoc) and package
+        run: |
+          set -euo pipefail
+          out=ToneTinkerer-macOS
+          mkdir -p "$out"
+          cp -R target/bundled/ToneTinkerer.vst3 target/bundled/ToneTinkerer.clap "$out/"
+          # Ad-hoc signature: required for plugins to load on Apple silicon.
+          codesign --force --deep --sign - "$out/ToneTinkerer.vst3" "$out/ToneTinkerer.clap"
+          lipo -info "$out/ToneTinkerer.vst3/Contents/MacOS/ToneTinkerer"
+          cp LICENSE THIRD_PARTY_NOTICES.md THIRD_PARTY_LICENSES.txt "$out/"
+          cp .github/install/macOS-README.txt "$out/README.txt"
+          ditto -c -k --keepParent "$out" "$out.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: ToneTinkerer-macOS.zip
+
+  windows:
+    name: Windows (x64)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: rustup show
+      - uses: Swatinem/rust-cache@v2
+      - name: Build VST3 + CLAP
+        run: cargo xtask bundle tonetinkerer-plugin --release
+      - name: Package
+        shell: pwsh
+        run: |
+          $out = "ToneTinkerer-Windows"
+          New-Item -ItemType Directory -Force $out | Out-Null
+          Copy-Item -Recurse target/bundled/ToneTinkerer.vst3 $out/
+          Copy-Item target/bundled/ToneTinkerer.clap $out/
+          Copy-Item LICENSE, THIRD_PARTY_NOTICES.md, THIRD_PARTY_LICENSES.txt $out/
+          Copy-Item .github/install/Windows-README.txt $out/README.txt
+          Compress-Archive -Path $out -DestinationPath "$out.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: ToneTinkerer-Windows.zip
+
+  linux:
+    name: Linux (x86_64)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: System libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libgl-dev libjack-dev libx11-xcb-dev \
+            libxcb1-dev libxcb-dri2-0-dev libxcb-icccm4-dev libxcursor-dev \
+            libxkbcommon-dev libxcb-shape0-dev libxcb-xfixes0-dev
+      - name: Toolchain
+        run: rustup show
+      - uses: Swatinem/rust-cache@v2
+      - name: Build VST3 + CLAP
+        run: cargo xtask bundle tonetinkerer-plugin --release
+      - name: Package
+        run: |
+          set -euo pipefail
+          out=ToneTinkerer-Linux
+          mkdir -p "$out"
+          cp -R target/bundled/ToneTinkerer.vst3 target/bundled/ToneTinkerer.clap "$out/"
+          cp LICENSE THIRD_PARTY_NOTICES.md THIRD_PARTY_LICENSES.txt "$out/"
+          cp .github/install/Linux-README.txt "$out/README.txt"
+          tar czf "$out.tar.gz" "$out"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: ToneTinkerer-Linux.tar.gz
+
+  release:
+    name: Publish release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [macos, windows, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "ToneTinkerer ${GITHUB_REF_NAME#v}" \
+            --notes-file .github/release-notes.md

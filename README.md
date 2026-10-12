@@ -60,20 +60,41 @@ Sounds with a song reference were voiced by measuring the guitar in that
 recording (see IMPLEMENTATION_PLAN.md); the recordings themselves are never
 part of this project.
 
-## Install (macOS, Apple silicon)
+## Download and install
+
+Get the latest version from **[Releases](https://github.com/Tinkercaster/tonetinkerer/releases/latest)**:
+no building needed. Each download has the VST3 and CLAP plugins and a
+`README.txt` with the steps.
+
+| Your computer | Download | Copy the plugins to |
+|---|---|---|
+| Mac (Apple silicon or Intel) | `ToneTinkerer-macOS.zip` | `~/Library/Audio/Plug-Ins/VST3/` and `~/Library/Audio/Plug-Ins/CLAP/` |
+| Windows 10/11 (64-bit) | `ToneTinkerer-Windows.zip` | `C:\Program Files\Common Files\VST3\` and `...\CLAP\` |
+| Linux (x86_64) | `ToneTinkerer-Linux.tar.gz` | `~/.vst3/` and `~/.clap/` |
+
+On a Mac, this build is not yet notarized by Apple, so run this once in
+Terminal after copying:
 
 ```bash
-cargo xtask bundle tonetinkerer-plugin --release
+xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/ToneTinkerer.vst3 ~/Library/Audio/Plug-Ins/CLAP/ToneTinkerer.clap
+```
+
+Then restart your DAW (or rescan plugins). In REAPER it appears as
+"VST3: ToneTinkerer (GuitarWiring)" and "CLAP: ToneTinkerer".
+
+### Build it yourself
+
+```bash
+cargo xtask bundle tonetinkerer-plugin --release          # or bundle-universal on macOS
 cp -R target/bundled/ToneTinkerer.vst3 ~/Library/Audio/Plug-Ins/VST3/
 cp -R target/bundled/ToneTinkerer.clap ~/Library/Audio/Plug-Ins/CLAP/
 ```
 
-Or build an installer: `scripts/build-macos-pkg.sh` -> `target/installer/ToneTinkerer.pkg`
+Or build a macOS installer: `scripts/build-macos-pkg.sh` -> `target/installer/ToneTinkerer.pkg`
 (unsigned unless `SIGN_APP` / `SIGN_PKG` name your Developer ID certificates;
-notarization steps are in the script).
-
-Restart your DAW (or rescan plugins). In REAPER it appears as
-"VST3: ToneTinkerer (GuitarWiring)" and "CLAP: ToneTinkerer".
+notarization steps are in the script). Releases are built by
+[.github/workflows/release.yml](.github/workflows/release.yml) whenever a
+`v*` tag is pushed.
 
 ## Playing through it
 
