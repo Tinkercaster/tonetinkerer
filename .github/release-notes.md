@@ -35,7 +35,7 @@ Each contains the VST3 and CLAP plugins and a `README.txt` with the steps.
 
 ## What's inside
 
-23 level-matched sounds across Clean, Blues & Jazz, Rock, Metal, Lead and Ambient. Seven knobs with plain names (Gain, Body, Bright, Mids, Sustain, Space, Volume) and one-tap fixes such as "Too thin" and "Too muddy". The input level and the noise gate set themselves while you play.
+23 level-matched sounds across Clean, Blues & Jazz, Rock, Metal, Lead and Ambient. Seven knobs with plain names (Gain, Body, Bright, Mids, Sustain, Space, Volume) and one-tap fixes such as "Too thin" and "Too muddy". The noise gate measures your input's hiss in pauses and sets itself.
 
 The Advanced view has every setting: gate, compressor, wah, overdrive, four neural amp models (NAM), cabinets, EQ, chorus, delay and reverb. You can load your own `.nam` captures and cabinet IRs.
 

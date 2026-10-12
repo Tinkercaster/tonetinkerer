@@ -217,8 +217,9 @@ fn main() -> ExitCode {
             eprintln!("wrote {} ({secs} s riff, root {root}, {bpm} bpm)", args[4]);
         }
         Some("levels") => {
-            // Loudness of every sound on the demo phrase (RMS while playing).
-            let di = trainsig::demo_phrase(48_000.0);
+            // Loudness of every sound at the typical playing level (RMS while
+            // playing); every sound should land at -16 dBFS.
+            let di = trainsig::voicing_phrase(48_000.0);
             for p in tonetinkerer_dsp::presets::PRESETS {
                 let params = (p.params)();
                 let mut e = tonetinkerer_dsp::assets::build_engine(48_000.0);

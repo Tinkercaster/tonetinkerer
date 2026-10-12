@@ -8,7 +8,6 @@
 //! chunks of at most `MAX_CHUNK` samples), never allocates, locks or does I/O.
 
 use crate::amp::{self, AmpStage, NamSlot};
-use crate::autolevel::AutoLevel;
 use crate::cab::{self, CabSlot, CabStage};
 use crate::chorus::{Chorus, ChorusSettings};
 use crate::compressor::SustainCompressor;
@@ -197,9 +196,6 @@ pub struct Meters {
     pub gate_reduction_db: f32,
     /// Background hiss the gate has measured on the input (RMS dBFS).
     pub noise_floor_db: f32,
-    /// Gain the automatic input level applies (dB), and whether it is learned.
-    pub auto_level_db: f32,
-    pub level_learned: bool,
     pub comp_reduction_db: f32,
 }
 
@@ -313,7 +309,6 @@ impl InputActivity {
 pub struct Engine {
     sr: f32,
     in_gain: Smoothed,
-    autolevel: AutoLevel,
     sel_l: Smoothed,
     sel_r: Smoothed,
     /// Auto input mode has seen a signal since the last reset. Until then
@@ -367,7 +362,6 @@ impl Engine {
         Self {
             sr,
             in_gain: mk(1.0, 20.0),
-            autolevel: AutoLevel::new(sr),
             sel_l: mk(0.5, 30.0),
             sel_r: mk(0.5, 30.0),
             sel_decided: false,
@@ -405,11 +399,6 @@ impl Engine {
     }
 
     /// Total processing latency in samples (constant for a given sample rate).
-    /// Learn the player's input level again from the next seconds of playing.
-    pub fn relearn_input_level(&mut self) {
-        self.autolevel.relearn();
-    }
-
     pub fn latency(&self) -> usize {
         self.latency
     }
@@ -422,7 +411,6 @@ impl Engine {
     pub fn reset(&mut self, p: &ChainParams) {
         self.in_gain
             .reset(db_to_gain(p.input_gain_db));
-        self.autolevel.reset();
         let (l, r) = match p.input_mode {
             InputMode::Left => (1.0, 0.0),
             InputMode::Right => (0.0, 1.0),
@@ -565,8 +553,6 @@ impl Engine {
         }
         meters.gate_reduction_db = self.gate.reduction_db();
         meters.noise_floor_db = self.gate.noise_floor_db();
-        meters.auto_level_db = self.autolevel.gain_db();
-        meters.level_learned = self.autolevel.learned();
         meters.comp_reduction_db = self.comp.gain_reduction_db();
         self.meters = meters;
     }
@@ -584,12 +570,7 @@ impl Engine {
             meters.raw_input_peak = meters.raw_input_peak.max(x.abs());
         }
 
-        // Automatic input level (autolevel.rs): any guitar and interface
-        // gain end up at the level the sounds are voiced at, so clean and
-        // distorted sounds stay matched. It replaces the old per-pickup offset.
-        self.autolevel.process(&mut self.mono[..n]);
-
-        // Input trim (a manual offset on top).
+        // Input trim.
         self.in_gain.set_target(db_to_gain(p.input_gain_db));
         for x in self.mono[..n].iter_mut() {
             *x *= self.in_gain.next();

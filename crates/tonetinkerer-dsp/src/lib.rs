@@ -5,7 +5,6 @@
 //! which the plugin performs on non-audio threads.
 
 pub mod amp;
-pub mod autolevel;
 pub mod assets;
 pub mod biquad;
 pub mod cab;

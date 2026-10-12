@@ -12,8 +12,6 @@ use egui::{
     vec2,
 };
 use nice_plug::prelude::*;
-use std::sync::atomic::Ordering;
-use std::time::Instant;
 use tonetinkerer_dsp::presets::{Genre, PRESETS, Preset};
 
 fn panel(ui: &Ui, rect: Rect) {
@@ -170,8 +168,8 @@ pub fn ui(ed: &mut ToneEditor, ui: &mut Ui, setter: &ParamSetter) {
             ed.genre = *g;
         }
     }
-    // Guitar setup lives at the bottom of the sidebar.
-    let setup_h = 142.0;
+    // Input selection lives at the bottom of the sidebar.
+    let setup_h = 92.0;
     let setup_rect = Rect::from_min_max(pos2(inner.left(), inner.bottom() - setup_h), inner.max);
     let list = Rect::from_min_max(
         pos2(inner.left() - 6.0, grid.bottom() + 10.0),
@@ -223,8 +221,7 @@ pub fn ui(ed: &mut ToneEditor, ui: &mut Ui, setter: &ParamSetter) {
         pos2(side.right() - 1.0, setup_rect.top() - 6.0),
     );
     heading(ui, setup_rect.left_top() + vec2(0.0, 6.0), "MY GUITAR");
-    // Label over a full-width selector, then one full-width action. (No
-    // pickup selector: the input level is set automatically, autolevel.rs.)
+    // Label over a full-width selector.
     let w = inner.width();
     let row = |i: usize| setup_rect.top() + 30.0 + i as f32 * 54.0;
     for (i, text) in ["Input"].iter().enumerate() {
@@ -242,8 +239,6 @@ pub fn ui(ed: &mut ToneEditor, ui: &mut Ui, setter: &ParamSetter) {
     let mut r1 = child(ui, seg(0), egui::Layout::left_to_right(egui::Align::Min));
     segmented_labeled(&mut r1, setter, &params.input_sel, &["Auto", "Input 1", "Input 2"], theme::ACCENT, w)
         .map(|_| ());
-    let action = Rect::from_min_size(pos2(inner.left(), row(1) + 4.0), vec2(inner.width(), 36.0));
-    setup_action(ed, ui, action);
 
     // ------------------------------------------------------ hero + knobs
     let right = Rect::from_min_max(pos2(side.right() + gap, top), full.max);
@@ -398,91 +393,5 @@ pub fn ui(ed: &mut ToneEditor, ui: &mut Ui, setter: &ParamSetter) {
     }
     if fix_button(&mut f, "Too dry", a) {
         nudge(setter, &params.m_space, step);
-    }
-}
-
-/// How long the button listens (the level needs ~6 s of playing).
-const SETUP_SECONDS: f32 = 8.0;
-
-/// The guitar-level button. The level is learned automatically while you
-/// play; the button asks for it to be learned again now. One fixed-size slot
-/// shows, in turn: the button, a countdown bar while you play, the result.
-fn setup_action(ed: &mut ToneEditor, ui: &mut Ui, action: Rect) {
-    let p = ui.painter().clone();
-    let radius = CornerRadius::same(10);
-    if let Some((start, _)) = ed.setup {
-        let left = SETUP_SECONDS - start.elapsed().as_secs_f32();
-        if left > 0.0 {
-            let done = 1.0 - left / SETUP_SECONDS;
-            well(&p, action, 7);
-            let fill = Rect::from_min_size(action.min, vec2(action.width() * done, action.height()));
-            p.rect_filled(fill, radius, theme::ACCENT.gamma_multiply(0.45));
-            p.text(
-                action.center(),
-                Align2::CENTER_CENTER,
-                format!("Play for a few seconds…  {:.0}", left.ceil()),
-                theme::semibold(12.5),
-                theme::TEXT,
-            );
-            ui.ctx().request_repaint();
-            return;
-        }
-        ed.setup = None;
-        ed.setup_msg = Some(if ed.shared.level_learned.load(Ordering::Relaxed) {
-            format!(
-                "✓  Level set ({:+.0} dB)",
-                ed.shared.auto_level_db.load(Ordering::Relaxed)
-            )
-        } else {
-            "No guitar heard".to_owned()
-        });
-    }
-    if let Some(msg) = ed.setup_msg.clone() {
-        // Result chip: message left, "Try again" right, same size as the button.
-        let ok = msg.starts_with('✓');
-        let col = if ok { theme::GREEN } else { theme::RED };
-        well(&p, action, 7);
-        led(&p, action.left_center() + vec2(16.0, 0.0), true, col);
-        p.text(
-            action.left_center() + vec2(30.0, 0.0),
-            Align2::LEFT_CENTER,
-            msg.trim_start_matches('✓').trim(),
-            theme::semibold(12.5),
-            theme::TEXT,
-        );
-        let again = Rect::from_min_max(
-            pos2(action.right() - 90.0, action.top()),
-            action.max - vec2(14.0, 0.0),
-        );
-        let tip = if ok {
-            "Measure again"
-        } else {
-            "Check the cable and the Input setting above, then try again"
-        };
-        if link(ui, again, "setup_again", "Try again", Align2::RIGHT_CENTER)
-            .on_hover_text(tip)
-            .clicked()
-        {
-            ed.setup_msg = None;
-        }
-        return;
-    }
-    let r = ui.interact(action, ui.id().with("setup_btn"), Sense::click());
-    key(&p, action, 7, r.hovered(), r.is_pointer_button_down_on());
-    p.text(
-        action.center(),
-        Align2::CENTER_CENTER,
-        "Set up my guitar level",
-        theme::semibold(12.5),
-        theme::TEXT,
-    );
-    if r.on_hover_text(
-        "Your level is learned automatically while you play. Press to learn it again (another guitar, or the interface gain changed).",
-    )
-    .clicked()
-    {
-        ed.shared.relearn_level.store(true, Ordering::Relaxed);
-        ed.setup = Some((Instant::now(), 0.0));
-        ed.setup_msg = None;
     }
 }

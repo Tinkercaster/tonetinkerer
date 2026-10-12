@@ -14,7 +14,7 @@ use nice_plug::prelude::*;
 use nice_plug_egui::{EguiEditorState, RepaintNotifier};
 use parking_lot::Mutex;
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use tonetinkerer_dsp::amp::NamSlot;
 use tonetinkerer_dsp::assets;
 use tonetinkerer_dsp::cab::CabSlot;
@@ -65,11 +65,6 @@ pub struct Shared {
     pub output_peak_r: AtomicF32,
     pub gate_reduction_db: AtomicF32,
     pub noise_floor_db: AtomicF32,
-    /// Automatic input level: applied gain (dB) and whether it is learned.
-    pub auto_level_db: AtomicF32,
-    pub level_learned: AtomicBool,
-    /// GUI -> audio: learn the input level again.
-    pub relearn_level: AtomicBool,
     pub comp_reduction_db: AtomicF32,
     pub sample_rate: AtomicF32,
     pub amp_latency: AtomicUsize,
@@ -125,9 +120,6 @@ impl Default for ToneTinkerer {
             output_peak_r: AtomicF32::new(0.0),
             gate_reduction_db: AtomicF32::new(0.0),
             noise_floor_db: AtomicF32::new(-120.0),
-            auto_level_db: AtomicF32::new(0.0),
-            level_learned: AtomicBool::new(false),
-            relearn_level: AtomicBool::new(false),
             comp_reduction_db: AtomicF32::new(0.0),
             sample_rate: AtomicF32::new(48_000.0),
             amp_latency: AtomicUsize::new(0),
@@ -379,9 +371,6 @@ impl Plugin for ToneTinkerer {
         self.params
             .chain_params(context.transport().tempo, &mut self.chain);
 
-        if self.shared.relearn_level.swap(false, Ordering::Relaxed) {
-            engine.relearn_input_level();
-        }
         let channels = buffer.as_slice();
         match channels {
             [l] => engine.process(l, None, &self.chain),
@@ -403,8 +392,6 @@ impl Plugin for ToneTinkerer {
             .store(m.gate_reduction_db, Ordering::Relaxed);
         s.noise_floor_db
             .store(m.noise_floor_db, Ordering::Relaxed);
-        s.auto_level_db.store(m.auto_level_db, Ordering::Relaxed);
-        s.level_learned.store(m.level_learned, Ordering::Relaxed);
         s.comp_reduction_db
             .store(m.comp_reduction_db, Ordering::Relaxed);
         if self.editor_state.is_open() {

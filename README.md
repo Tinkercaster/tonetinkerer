@@ -19,10 +19,11 @@ are one-tap fixes named after what you hear: Too thin, Too muddy, Too harsh,
 Too dull, Too boxy, Lost in the mix, More sustain, More dirt, Cleaner, Too
 washy and Too dry.
 
-You don't set a level. During your first seconds of playing the plugin
-measures how hot your guitar arrives and sets the input to match, so clean and
-high-gain sounds play at the same volume on any interface. The noise gate
-measures your input's hiss the same way and closes just above it.
+The sounds are level-matched for a guitar arriving at a typical level
+(peaks around -18 dBFS), so clean and high-gain sounds play at about the same
+volume. The plugin never turns your input up before the amps. If your guitar
+arrives much hotter or quieter, Input Trim in the Advanced view adjusts it. The
+noise gate measures your input's own hiss in pauses and closes just above it.
 
 The Advanced view has every setting: noise gate, compressor, wah, overdrive,
 four neural amp models, cabinet IRs, EQ, chorus, delay and reverb.
@@ -128,8 +129,7 @@ Any audio interface works.
 2. In the DAW, make a track with that input, record-arm it, turn input
    monitoring on and add ToneTinkerer as its first effect. 48 kHz with a buffer
    of 64 to 128 samples works best.
-3. Pick a sound and play. The input level sets itself during your first
-   seconds of playing. If something is missing, turn a knob or tap a fix.
+3. Pick a sound and play. If something is missing, turn a knob or tap a fix.
 
 On macOS you can use one device for input and another for output, for example
 an interface in and laptop speakers out. Create an Aggregate Device in Audio

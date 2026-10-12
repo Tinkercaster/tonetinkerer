@@ -10,8 +10,7 @@ ToneTinkerer for Windows (64-bit, Windows 10 or 11)
 Playing: guitar into your interface's instrument (Hi-Z) input and use the
 interface's ASIO driver in your DAW. A track with that input, record-armed
 with input monitoring on, ToneTinkerer as its first effect. 48 kHz and a
-buffer of 64-128 samples work best. Pick a sound and play: the input level
-sets itself during your first seconds of playing.
+buffer of 64-128 samples work best. Pick a sound and play.
 
 Next time, the easiest way to install or update is one line (in PowerShell):
 

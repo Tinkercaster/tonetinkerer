@@ -15,7 +15,7 @@ ToneTinkerer for macOS (Apple silicon and Intel, macOS 11 or newer)
 Playing: guitar into your interface's instrument (Hi-Z) input, a track with
 that input, record-armed with input monitoring on, ToneTinkerer as its first
 effect. 48 kHz and a buffer of 64-128 samples work best. Pick a sound and
-play: the input level sets itself during your first seconds of playing.
+play.
 
 Next time, the easiest way to install or update is one line (in Terminal):
 

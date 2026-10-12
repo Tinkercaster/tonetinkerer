@@ -15,7 +15,6 @@ use nice_plug_egui::{
 };
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
-use std::time::Instant;
 use tonetinkerer_dsp::chain::ChainParams;
 use tonetinkerer_dsp::presets::{Genre, PRESETS, Preset};
 
@@ -37,9 +36,6 @@ pub struct ToneEditor {
     pub(crate) out_peak: [f32; 2],
     pub(crate) view: View,
     pub(crate) genre: Genre,
-    /// Guitar setup in progress: (start time, peak so far).
-    pub(crate) setup: Option<(Instant, f32)>,
-    pub(crate) setup_msg: Option<String>,
     background: Option<egui::TextureHandle>,
 }
 
@@ -63,8 +59,6 @@ pub fn create(
         out_peak: [0.0; 2],
         view: View::Play,
         genre,
-        setup: None,
-        setup_msg: None,
         background: None,
     };
     create_egui_editor(
@@ -361,17 +355,7 @@ impl ToneEditor {
         knob(&mut k, setter, &p.drive_tone, "Tone", theme::DRIVE, on);
         knob(&mut k, setter, &p.drive_level, "Level", theme::DRIVE, on);
 
-        let (_, io_header, body) = card_at(ui, r[3], "IN / OUT", theme::OUTPUT, None);
-        // What the automatic input level does (autolevel.rs).
-        let auto = self.shared.auto_level_db.load(Ordering::Relaxed);
-        let learned = self.shared.level_learned.load(Ordering::Relaxed);
-        ui.painter().text(
-            io_header.right_center(),
-            egui::Align2::RIGHT_CENTER,
-            if learned { format!("auto {auto:+.0} dB") } else { format!("auto {auto:+.0} dB…") },
-            theme::regular(10.5),
-            theme::MUTED,
-        );
+        let (_, _, body) = card_at(ui, r[3], "IN / OUT", theme::OUTPUT, None);
         let mut c = at(ui, controls_row(body), row_layout());
         c.spacing_mut().item_spacing.x = 8.0;
         enum_combo(&mut c, setter, &p.input_sel, 110.0);
@@ -541,7 +525,6 @@ impl NiceEguiApp for ToneEditor {
     fn editor_closed(&mut self) {
         self.gui = None;
         self.background = None;
-        self.setup = None;
     }
 
     fn ui(&mut self, ui: &mut Ui, _frame: &mut nice_plug_egui::Frame) {
@@ -564,8 +547,6 @@ impl ToneEditor {
             out_peak: [0.4, 0.38],
             view,
             genre,
-            setup: None,
-            setup_msg: None,
             background: None,
         }
     }

@@ -310,6 +310,21 @@ pub fn generate(sr: f32, seconds: f32, seed: u64) -> Vec<f32> {
     out
 }
 
+/// How hot a typical guitar arrives from an interface, relative to
+/// `demo_phrase` (which peaks around -6 dBFS, hotter than most real setups):
+/// peaks around -18 dBFS. Sounds are level-matched at this level, so a clean
+/// sound (whose loudness follows the input 1:1) sits with the distorted ones
+/// for typical players, without boosting the input (and its hiss) before the
+/// amps.
+pub const VOICING_LEVEL_DB: f32 = -12.0;
+
+/// `demo_phrase` at the typical playing level (`VOICING_LEVEL_DB`): the
+/// reference the sounds are level-matched against.
+pub fn voicing_phrase(sr: f32) -> Vec<f32> {
+    let g = 10f32.powf(VOICING_LEVEL_DB / 20.0);
+    demo_phrase(sr).into_iter().map(|v| v * g).collect()
+}
+
 /// A short legato lead phrase (bends, vibrato, slides, a held note) plus a
 /// chord, for demo renders and integration tests. Peaks around -6 dBFS.
 pub fn demo_phrase(sr: f32) -> Vec<f32> {

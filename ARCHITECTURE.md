@@ -21,17 +21,19 @@ Sound (preset)  ──►  detailed ChainParams  ──►  macros::apply(base, 
   renderer, so the macros are automatable and testable offline. Their measured
   effects are verified in `tests/macros.rs`.
 - **Fix buttons** on the Play screen only nudge macros (one host gesture each).
-- **Input level** is automatic (`autolevel.rs`, see the signal chain). The
-  "Set up my guitar level" button only asks it to learn again
-  (`Shared::relearn_level` -> `Engine::relearn_input_level`). The old Guitar
-  (pickup type) parameter is kept for saved projects but no longer used.
+- **Input level**: there is no automatic input gain. Sounds are level-matched
+  at a typical playing level (`testsig::VOICING_LEVEL_DB`, peaks around -18
+  dBFS) so clean sounds sit with distorted ones without boosting the input
+  (an automatic input gain that did so raised the interface's hiss by up to
+  30 dB in front of every amp and was removed). Input Trim is manual. The old
+  Guitar (pickup type) parameter is kept for saved projects but no longer used.
 - The "edited" marker compares the detailed parameters (not the macros) with
   the selected sound.
 
 ## Signal chain
 
 ```
-guitar in ─► input select / auto level / trim ─► noise gate ─► wah ─► compressor
+guitar in ─► input select / trim ─► noise gate ─► wah ─► compressor
           ─► overdrive (4x oversampled) ─► NAM amp ─► cabinet IR ─► EQ
           ─► chorus ─► stereo delay ─► reverb ─► output level ─► safety limiter ─► out
 ```
@@ -41,7 +43,6 @@ Mono from the input selector through the EQ; stereo from the chorus onwards.
 | Stage | Implementation | Notes |
 |---|---|---|
 | Input select | `chain::Engine::select_input` | Auto / Left / Right. Auto follows the input something is played on (any interface, guitar on input 1 or 2): each input learns its own hiss level and counts as played only well above it, so an empty, hissy input is never mixed in (before the first note the quieter input is used; in pauses the choice holds). It takes one channel when both are identical, blends two instruments at similar levels, and switches instantly onto the only live channel, so a channel dropping out never dips the level |
-| Auto input level | `autolevel.rs` | Measures how loud the playing is (90th percentile of 64-sample frame peaks while playing, i.e. 20+ dB above the input's own hiss; a light touch or stray peaks can't set it) over the first ~6 s of playing, and sets a gain (-12..+30 dB) that puts it at the level the sounds were voiced at (the demo phrase), so clean and distorted sounds stay matched at any interface gain; then holds it (dynamics kept), relearns on a lasting 10 dB change or the "Set up my guitar level" button. Hiss alone is never boosted. Replaces the old per-pickup input offset; Input Trim is a manual offset on top |
 | Noise gate | `gate.rs` | RMS-style level (10 ms), 5 dB hysteresis, 40 ms hold, fast (10 ms) close. Threshold = the sound's, or 9 dB above the input's measured hiss (closing ~4 dB above it, so notes ring until nearly gone), whichever is higher. The hiss is learned only while the input sounds like hiss (top band vs low band power; never by zero crossings, which hiss adds to a quiet note), never while a note rings |
 | Wah | `wah.rs` | TPT state-variable filter 350 Hz - 2.3 kHz; Manual (automate it like an expression pedal) or Auto (envelope) |
 | Sustain | `compressor.rs` | Feed-forward, soft knee, program-dependent (opto-like) release, auto make-up |

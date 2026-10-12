@@ -189,15 +189,6 @@ fn advanced_screen_renders() {
     img.save(out_dir().join("advanced.png")).unwrap();
 }
 
-#[test]
-fn guitar_setup_result_renders() {
-    for (name, msg) in [("setup-none", "No guitar heard"), ("setup-ok", "✓  Level set (+3.5 dB)")] {
-        let img = render_with(View::Play, Genre::Clean, |e, _| e.setup_msg = Some(msg.to_owned()));
-        assert_has_content(&img, name);
-        img.save(out_dir().join(format!("play-{name}.png"))).unwrap();
-    }
-}
-
 /// The README screenshots (docs/images/simple.png, advanced.png): a lead
 /// sound with a few knobs moved, as in a session that has been playing for a
 /// while. Run with `cargo test -p tonetinkerer-plugin readme_screenshots -- --ignored`.
@@ -218,8 +209,6 @@ fn readme_screenshots() {
         s.sample_rate.store(48_000.0, Ordering::Relaxed);
         s.latency.store(12, Ordering::Relaxed);
         s.noise_floor_db.store(-82.0, Ordering::Relaxed);
-        s.auto_level_db.store(8.0, Ordering::Relaxed);
-        s.level_learned.store(true, Ordering::Relaxed);
         s.input_peak.store(0.3, Ordering::Relaxed);
         s.output_peak_l.store(0.45, Ordering::Relaxed);
         s.output_peak_r.store(0.42, Ordering::Relaxed);
