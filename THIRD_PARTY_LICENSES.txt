@@ -52361,6 +52361,28 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 ==============================================================================
+Jester Dyne Productions cabinet IRs (bundled)  (CC0-1.0)
+==============================================================================
+Cabinet impulse responses: 4x12_modern.wav and 4x12_british.wav
+
+Recorded by Bastian Karschewski, Jester Dyne Productions
+https://jester-dyne-productions.com
+
+4x12_modern.wav   "Jester's Brutal Pack" 1.0, IR 9 (48 kHz): modified 4x12
+                  with Vintage 30-type speakers, condenser microphone.
+4x12_british.wav  "Emerald Pack" 1.0, IR 1 (48 kHz): 1998 British 4x12 with
+                  Greenback-type speakers, SM57-type dynamic microphone.
+
+Both packs are released under CC0 1.0 Universal (public domain dedication),
+as stated in each pack's handbook: "LICENSED 2022 UNDER: CC0 ... allows
+reusers to distribute, remix, adapt, and build upon the material in any
+medium or format, with no conditions."
+https://creativecommons.org/publicdomain/zero/1.0/
+
+The files are unmodified copies of the originals. Credit is given as a
+courtesy; CC0 does not require it. Thank you, Bastian.
+
+==============================================================================
 Standard licence texts (for crates above that ship no licence file)
 ==============================================================================
 --- MIT

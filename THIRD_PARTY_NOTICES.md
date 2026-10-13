@@ -336,3 +336,4 @@ fonts under OFL-1.1 / Ubuntu Font Licence), the `vst3` bindings, and
 | Font | Licence |
 |---|---|
 | Inter (font, bundled) | OFL-1.1 |
+| Jester Dyne Productions cabinet IRs (bundled) | CC0-1.0 |

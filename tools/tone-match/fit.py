@@ -114,6 +114,47 @@ if os.environ.get("FIT_MODE") == "eval":
     print("  shipped", " ".join(f"{v:5.1f}" for v in sp))
     sys.exit(0)
 
+if os.environ.get("FIT_MODE") == "cabfit":
+    # Re-voice a shipped sound for a different cabinet (FIT_OVERRIDES="cab_ir=N"):
+    # coordinate descent on the cut filters and mid / treble / presence only, starting from the
+    # shipped values and staying within a moderate range around them.
+    import re
+
+    fixed = os.environ.get("FIT_OVERRIDES", "")
+    src = (ROOT / "crates/tonetinkerer-dsp/src/presets.rs").read_text()
+    body = src[src.index(f'name: "{preset}"'):]
+    body = body[: body.index("Preset {") if "Preset {" in body else len(body)]
+    num = lambda k: float(re.search(rf"{k}: ([-\d_.]+)", body).group(1).replace("_", ""))
+    e = [float(v.replace("_", "")) for v in re.search(r"eq: eq\(([^)]*)\)", body).group(1).split(",")]
+    p = {"low_cut": num("cab_low_cut"), "high_cut": num("cab_high_cut"), "bass": e[0], "body_eq": e[1],
+         "mid": e[2], "mid_freq": e[3], "treble": e[4], "presence": e[5]}
+    # The low end stays as shipped (bass / body / low cut within 15 Hz): the
+    # resynthesized DIs and separated stems exaggerate it, and fits chase it.
+    lim = {"low_cut": (max(45, p["low_cut"] - 15), min(150, p["low_cut"] + 15), 8.0),
+           "high_cut": (max(4500, p["high_cut"] * 0.6), min(18000, p["high_cut"] * 1.6), 2000.0)}
+    for k in ("mid", "treble", "presence"):
+        lim[k] = (p[k] - 5, p[k] + 5, 2.0)
+    err, _ = evaluate(p)
+    print(f"start {err:.2f}")
+    steps = {k: v[2] for k, v in lim.items()}
+    for _ in range(5):
+        improved = False
+        for name, (lo, hi, _) in lim.items():
+            for sgn in (+1, -1):
+                q = dict(p)
+                q[name] = float(np.clip(p[name] + sgn * steps[name], lo, hi))
+                e2, _ = evaluate(q)
+                if e2 < err - 1e-3:
+                    err, p, improved = e2, q, True
+                    break
+        for k2 in steps:
+            steps[k2] *= 0.5
+        if not improved and all(steps[k2] < lim[k2][2] / 8 for k2 in steps):
+            break
+    print(f"CABFIT {tag} ({preset}) [{fixed}] rms band error {err:.2f} dB")
+    print("  params ", {k: round(v, 1) for k, v in p.items()})
+    sys.exit(0)
+
 if os.environ.get("FIT_MODE") == "powell":
     from scipy.optimize import minimize
 

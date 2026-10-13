@@ -425,7 +425,7 @@ impl ToneEditor {
             h.label(RichText::new(n).size(11.0).color(theme::MUTED));
         }
         let mut c = at(ui, controls_row(body), row_layout());
-        segmented(&mut c, setter, &p.cab_ir, theme::CAB, body.width());
+        enum_combo(&mut c, setter, &p.cab_ir, 170.0);
         let mut k = knobs(ui, body);
         knob(&mut k, setter, &p.cab_low_cut, "Low Cut", theme::CAB, on);
         knob(&mut k, setter, &p.cab_high_cut, "High Cut", theme::CAB, on);

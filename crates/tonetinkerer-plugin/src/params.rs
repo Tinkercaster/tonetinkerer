@@ -55,6 +55,10 @@ pub enum CabSel {
     Open2x12,
     #[name = "1x12 Vintage"]
     Vintage1x12,
+    #[name = "4x12 Modern"]
+    Modern4x12,
+    #[name = "4x12 British"]
+    British4x12,
     Custom,
 }
 
@@ -417,6 +421,8 @@ pub fn cab_index(c: CabSel) -> usize {
         CabSel::Closed4x12 => cab::SLOT_4X12,
         CabSel::Open2x12 => cab::SLOT_2X12,
         CabSel::Vintage1x12 => cab::SLOT_1X12,
+        CabSel::Modern4x12 => cab::SLOT_4X12_MODERN,
+        CabSel::British4x12 => cab::SLOT_4X12_BRITISH,
         CabSel::Custom => cab::SLOT_CUSTOM,
     }
 }
@@ -425,6 +431,8 @@ pub fn cab_sel(i: usize) -> CabSel {
     match i {
         cab::SLOT_2X12 => CabSel::Open2x12,
         cab::SLOT_1X12 => CabSel::Vintage1x12,
+        cab::SLOT_4X12_MODERN => CabSel::Modern4x12,
+        cab::SLOT_4X12_BRITISH => CabSel::British4x12,
         cab::SLOT_CUSTOM => CabSel::Custom,
         _ => CabSel::Closed4x12,
     }

@@ -42,6 +42,7 @@ SOFTWARE."""
 LICENSE_HINTS = ("license", "licence", "copying", "notice", "unlicense", "ofl", "ufl")
 EXTRA = [
     ("Inter (font, bundled)", "OFL-1.1", ROOT / "assets/fonts/Inter-LICENSE.txt"),
+    ("Jester Dyne Productions cabinet IRs (bundled)", "CC0-1.0", ROOT / "assets/irs/JESTER-IRS-LICENSE.txt"),
 ]
 
 

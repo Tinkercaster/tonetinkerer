@@ -1,7 +1,9 @@
 # Bundled assets: provenance
 
-Every file in `assets/` is original work (plus optional user-supplied skin artwork in `assets/skin/`) created for this project, so it can
-be distributed with the plugin under the project license.
+Every file in `assets/` is original work created for this project (plus
+optional user-supplied skin artwork in `assets/skin/`), except two cabinet
+IRs released into the public domain (CC0) by their author. Everything can be
+distributed with the plugin.
 
 ## Amp models (`assets/models/*.nam`)
 
@@ -30,10 +32,20 @@ captures of any commercial amplifier.
 
 ## Cabinet IRs (`assets/irs/*.wav`)
 
-Synthesized by `tonetinkerer-render gen-irs` (`src/irgen.rs`): designed
+`4x12_modern.wav` and `4x12_british.wav` are real microphone recordings by
+Bastian Karschewski, [Jester Dyne Productions](https://jester-dyne-productions.com),
+from "Jester's Brutal Pack" 1.0 (IR 9: a 4x12 with Vintage 30-type speakers)
+and the "Emerald Pack" 1.0 (IR 1: a 1998 British 4x12 with Greenback-type
+speakers). Both packs are licensed CC0 1.0 per their handbooks; the files are
+unmodified. See `assets/irs/JESTER-IRS-LICENSE.txt`. They were picked from
+the packs by scoring every candidate against the reference recordings with
+`tools/tone-match` (`FIT_MODE=cabfit`).
+
+`4x12_closed.wav`, `2x12_open.wav` and `1x12_vintage.wav` are synthesized by `tonetinkerer-render gen-irs` (`src/irgen.rs`): designed
 magnitude responses of close-miked guitar speakers (cabinet resonance,
 cone break-up, high-frequency roll-off), made minimum-phase via the real
 cepstrum, plus cabinet / room reflections. Not measurements of any product.
+The cleans and ambient sounds still use these.
 
 ## Not bundled
 

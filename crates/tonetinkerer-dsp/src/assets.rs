@@ -1,7 +1,8 @@
 //! Bundled amp models and cabinet IRs, compiled into the binary so the
 //! plugin works with zero setup. All are original works (see ASSETS.md):
-//! the NAM models are virtual captures of an in-house reference circuit and
-//! the IRs are synthesized speaker responses.
+//! the NAM models are virtual captures of an in-house reference circuit, the
+//! first three IRs are synthesized speaker responses, and the two "4x12 Modern"
+//! / "4x12 British" IRs are real microphone recordings released under CC0.
 
 use crate::amp::{self, NamSlot};
 use crate::cab::{self, CabSlot};
@@ -19,7 +20,7 @@ pub const AMP_MODELS: [(&str, &[u8]); 4] = [
     ("Metal", include_bytes!("../../../assets/models/metal.nam")),
 ];
 
-pub const CAB_IRS: [(&str, &[u8]); 3] = [
+pub const CAB_IRS: [(&str, &[u8]); 5] = [
     (
         "4x12 Closed",
         include_bytes!("../../../assets/irs/4x12_closed.wav"),
@@ -31,6 +32,14 @@ pub const CAB_IRS: [(&str, &[u8]); 3] = [
     (
         "1x12 Vintage",
         include_bytes!("../../../assets/irs/1x12_vintage.wav"),
+    ),
+    (
+        "4x12 Modern",
+        include_bytes!("../../../assets/irs/4x12_modern.wav"),
+    ),
+    (
+        "4x12 British",
+        include_bytes!("../../../assets/irs/4x12_british.wav"),
     ),
 ];
 
@@ -70,7 +79,13 @@ pub fn build_engine(sample_rate: f32) -> Engine {
     for (i, (name, bytes)) in CAB_IRS.iter().enumerate() {
         let slot = CabSlot::from_wav_bytes(bytes, name, sample_rate).expect("bundled IR loads");
         e.cab.set_slot(
-            [cab::SLOT_4X12, cab::SLOT_2X12, cab::SLOT_1X12][i],
+            [
+                cab::SLOT_4X12,
+                cab::SLOT_2X12,
+                cab::SLOT_1X12,
+                cab::SLOT_4X12_MODERN,
+                cab::SLOT_4X12_BRITISH,
+            ][i],
             Some(Box::new(slot)),
         );
     }

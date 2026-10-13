@@ -142,8 +142,9 @@ change it) and is reported to the host.
 See [ASSETS.md](ASSETS.md). In short: the four NAM models are *virtual
 captures* trained (with the official NAM trainer) on in-house reference
 circuits (`tonetinkerer-render/src/refamp.rs`) using a synthetic DI signal, and
-the IRs are synthesized minimum-phase speaker responses. Everything is
-original work, so there are no third-party licensing questions. Users can
+three IRs are synthesized minimum-phase speaker responses. The two real 4x12
+IRs ("4x12 Modern", "4x12 British") are CC0 recordings by Jester Dyne
+Productions, used by the rock, metal and lead sounds. Users can
 load any `.nam` capture and any IR `.wav` into the Custom slots.
 
 ## Key decisions and trade-offs
@@ -153,7 +154,7 @@ load any `.nam` capture and any IR `.wav` into the Custom slots.
 | nice-plug (RustAudio fork of NIH-plug) pinned to a git commit | The maintained fork; not on crates.io yet | Updates are manual |
 | `nam-rs` for inference | Pure Rust, allocation-free, parity-tested against NAM Core | Single-threaded per model |
 | Train our own models | License-clean, reproducible, voiced for the target style | Not captures of real amps (users can load those) |
-| Synthesized IRs | License-clean | Not measured cabinets (users can load those) |
+| Synthesized IRs plus CC0 recorded 4x12s | License-clean; real cabinets where the gain sounds need them | Only two measured cabinets (users can load more) |
 | DSP-side smoothing | Offline render == plugin output | Duplicates what nice-plug smoothers could do |
 | Overdrive always in the chain (bypass delay-matched) | Constant latency, click-free bypass | 0.25 ms latency even when the drive is off |
 | Resample around NAM at non-48 kHz rates | Correct model behaviour at every rate | Small extra latency away from 48 kHz |

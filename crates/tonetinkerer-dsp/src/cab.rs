@@ -14,8 +14,10 @@ use realfft::RealFftPlanner;
 pub const SLOT_4X12: usize = 0;
 pub const SLOT_2X12: usize = 1;
 pub const SLOT_1X12: usize = 2;
-pub const SLOT_CUSTOM: usize = 3;
-pub const NUM_SLOTS: usize = 4;
+pub const SLOT_4X12_MODERN: usize = 3;
+pub const SLOT_4X12_BRITISH: usize = 4;
+pub const SLOT_CUSTOM: usize = 5;
+pub const NUM_SLOTS: usize = 6;
 
 /// Longest IR kept (cabinet IRs rarely need more than ~100 ms).
 pub const MAX_IR_SECONDS: f32 = 0.5;
@@ -191,7 +193,7 @@ impl CabStage {
         hc.set_time(sr, 25.0);
         let mut s = Self {
             sr,
-            slots: [None, None, None, None],
+            slots: [None, None, None, None, None, None],
             active: SLOT_4X12,
             prev: None,
             fade_pos: 0,

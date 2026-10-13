@@ -26,7 +26,7 @@ arrives much hotter or quieter, Input Trim in the Advanced view adjusts it. The
 noise gate measures your input's own hiss in pauses and closes just above it.
 
 The Advanced view has every setting: noise gate, compressor, wah, overdrive,
-four neural amp models, cabinet IRs, EQ, chorus, delay and reverb.
+four neural amp models, five cabinets, EQ, chorus, delay and reverb.
 
 <details>
 <summary>Advanced view screenshot</summary>
@@ -34,6 +34,11 @@ four neural amp models, cabinet IRs, EQ, chorus, delay and reverb.
 ![ToneTinkerer Advanced view: gate, compressor, wah, overdrive, neural amp, cabinet, chorus, delay, reverb](docs/images/advanced.png)
 
 </details>
+
+The rock, metal and lead sounds play through two real miked 4x12 cabinets,
+a modern one and a classic British one. They are free CC0 recordings by
+[Jester Dyne Productions](https://jester-dyne-productions.com). The cleans
+and ambient sounds use synthesized cabinets.
 
 Under the hood: Neural Amp Modeler inference ([nam-rs](https://crates.io/crates/nam-rs)),
 partitioned-convolution cabinets, [nice-plug](https://codeberg.org/RustAudio/nice-plug)
@@ -178,4 +183,5 @@ cargo run --release -p tonetinkerer-plugin --features standalone --bin tonetinke
 ToneTinkerer is open source under the [MIT License](LICENSE). Third-party
 components keep their own licences, all of them permissive (see
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)). The bundled Inter font is
-under the SIL Open Font License 1.1.
+under the SIL Open Font License 1.1, and the two recorded cabinet IRs are CC0
+(see [ASSETS.md](ASSETS.md)).
