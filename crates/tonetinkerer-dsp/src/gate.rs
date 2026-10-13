@@ -44,6 +44,17 @@ pub struct NoiseGate {
     floor_fall: f32,
     floor_rise_noise: f32,
     floor_rise_tonal: f32,
+    /// Steadiness detector: mean-square of the last `STEADY_SEGMENTS`
+    /// 50 ms segments. Background noise (hum, buzz, hiss) holds its level;
+    /// a guitar note always fades.
+    seg_len: u32,
+    seg_count: u32,
+    seg_acc: f32,
+    segs: [f32; STEADY_SEGMENTS],
+    seg_idx: usize,
+    segs_filled: usize,
+    /// Highest segment power while steady (0 when not steady).
+    steady_hi: f32,
 }
 
 /// How far below the open threshold the signal must fall before closing.
@@ -64,6 +75,13 @@ const FLOOR_MAX_DB: f32 = -42.0;
 /// The input sounds like hiss when the top band carries this many times
 /// the low band's power (white noise: ~7x, a note with hiss 6 dB below it: <2x).
 const HISS_TOP_TO_LOW: f32 = 2.0;
+/// Hum-heavy noise (mains hum and pickup buzz under the hiss) has its power
+/// low, like a note, so the band test above misses it and the gate never
+/// learned it: the noise passed every sound. It is told apart by being
+/// steady: over 1.5 s its level varies by well under STEADY_DB, while a
+/// note, even a long sustained one, fades by several dB in that time.
+const STEADY_SEGMENTS: usize = 30;
+const STEADY_DB: f32 = 2.0;
 
 impl NoiseGate {
     pub fn new(sample_rate: f32) -> Self {
@@ -99,6 +117,13 @@ impl NoiseGate {
             // a hiss that really got louder is learned in the next pause.
             floor_rise_noise: rise(sample_rate, 60.0),
             floor_rise_tonal: 1.0,
+            seg_len: (sample_rate * 0.05) as u32,
+            seg_count: 0,
+            seg_acc: 0.0,
+            segs: [0.0; STEADY_SEGMENTS],
+            seg_idx: 0,
+            segs_filled: 0,
+            steady_hi: 0.0,
         };
         // Close fast: the gain is applied before 60+ dB of amp gain, so a slow
         // fade lets the input's hiss through at full, distorted level after
@@ -115,6 +140,10 @@ impl NoiseGate {
         self.release_coeff = coeff(self.sample_rate, ms);
     }
 
+    /// Clears the signal state. The measured noise floor and the steadiness
+    /// history are kept: they describe the input, not the audio, and hosts
+    /// reset on every transport start; re-learning would let the noise
+    /// through for ~1.5 s each time.
     pub fn reset(&mut self) {
         self.env = 0.0;
         self.gain = 0.0;
@@ -126,7 +155,6 @@ impl NoiseGate {
         self.lo_ms = 0.0;
         self.hi_ms = 0.0;
         self.level = 0.0;
-        self.floor = power(FLOOR_START_DB);
     }
 
     /// Current gate gain reduction in dB (0 = fully open). For metering.
@@ -176,10 +204,18 @@ impl NoiseGate {
             let top = *x - self.lp_hi;
             self.lo_ms = self.lp_lo * self.lp_lo + (self.lo_ms - self.lp_lo * self.lp_lo) * self.ms_coeff;
             self.hi_ms = top * top + (self.hi_ms - top * top) * self.ms_coeff;
+            self.seg_acc += sq;
+            self.seg_count += 1;
+            if self.seg_count >= self.seg_len {
+                self.end_segment();
+            }
             if self.ms < self.floor {
                 self.floor = self.ms + (self.floor - self.ms) * self.floor_fall;
             } else {
-                let r = if self.hi_ms > self.lo_ms * HISS_TOP_TO_LOW {
+                // Steady only counts while the level still sits in the steady
+                // range: the first moments of a new note must not be learned.
+                let steady = self.ms < self.steady_hi;
+                let r = if steady || self.hi_ms > self.lo_ms * HISS_TOP_TO_LOW {
                     self.floor_rise_noise
                 } else {
                     self.floor_rise_tonal
@@ -211,6 +247,25 @@ impl NoiseGate {
             }
             *x *= self.gain;
         }
+    }
+}
+
+impl NoiseGate {
+    fn end_segment(&mut self) {
+        self.segs[self.seg_idx] = self.seg_acc / self.seg_count as f32;
+        self.seg_idx = (self.seg_idx + 1) % STEADY_SEGMENTS;
+        self.segs_filled = (self.segs_filled + 1).min(STEADY_SEGMENTS);
+        self.seg_acc = 0.0;
+        self.seg_count = 0;
+        self.steady_hi = if self.segs_filled < STEADY_SEGMENTS {
+            0.0
+        } else {
+            let (lo, hi) = self
+                .segs
+                .iter()
+                .fold((f32::MAX, 0.0f32), |(lo, hi), &v| (lo.min(v), hi.max(v)));
+            if hi < lo * power(STEADY_DB) { hi } else { 0.0 }
+        };
     }
 }
 

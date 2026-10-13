@@ -598,6 +598,70 @@ fn white(n: usize, db: f32, seed: u64) -> Vec<f32> {
     (0..n).map(|_| (rng.unit() - 0.5) * 2.0 * g).collect()
 }
 
+/// A guitar's real background noise: mains hum with its buzzy harmonics
+/// (pickups) plus interface hiss, at the given RMS. Most of its power sits
+/// low, like a note's, so it doesn't look like hiss; but it is steady.
+fn hum_and_hiss(n: usize, sr: f32, db: f32, seed: u64) -> Vec<f32> {
+    let hiss = white(n, -6.0, seed);
+    let mut x: Vec<f32> = (0..n)
+        .map(|i| {
+            let t = i as f32 / sr;
+            (1..12).map(|k| (2.0 * std::f32::consts::PI * 50.0 * k as f32 * t + k as f32).sin() / k as f32).sum::<f32>()
+                + hiss[i]
+        })
+        .collect();
+    let g = 10f32.powf(db / 20.0) / rms(&x);
+    x.iter_mut().for_each(|v| *v *= g);
+    x
+}
+
+/// Hum-and-hiss on the input must go quiet in pauses on every sound: the
+/// gate has to learn steady noise of any colour, not just white hiss (the
+/// cleans hissed on an input whose noise sat between their threshold and
+/// the gain sounds' one, and at -64 dB the noise passed on every sound).
+#[test]
+fn hum_and_hiss_go_quiet_in_pauses() {
+    let sr = 48_000.0;
+    // Long enough for the echo / reverb tails of the first 1.5 s (before the
+    // noise is learned) to die away.
+    let n = (sr * 10.0) as usize;
+    let mut bad = Vec::new();
+    for db in [-72.0f32, -68.0, -64.0, -56.0] {
+        let input = hum_and_hiss(n, sr, db, 41);
+        for preset in PRESETS {
+            let p = (preset.params)();
+            let mut e = build_engine(sr);
+            e.reset(&p);
+            let out = render(&mut e, &p, &input, 128).0;
+            let w = (sr * 8.5) as usize..n;
+            let level = 20.0 * rms(&out[w]).max(1e-9).log10();
+            if level > -80.0 {
+                bad.push(format!("{}: noise at {db} dB plays at {level:.0} dBFS", preset.name));
+            }
+        }
+    }
+    assert!(bad.is_empty(), "noise passes in pauses:\n{}", bad.join("\n"));
+}
+
+/// The same steady-noise learning must never take a held note for noise.
+#[test]
+fn held_note_over_hum_is_not_cut() {
+    let sr = 48_000.0;
+    let n = (sr * 13.5) as usize;
+    let start = (sr * 2.0) as usize;
+    let mut input = hum_and_hiss(n, sr, -56.0, 43);
+    // A 247 Hz note fading at 3 dB/s from -12 dBFS (RMS = amplitude - 5.4 dB).
+    for i in start..n {
+        let t = (i - start) as f32 / sr;
+        let a = 10f32.powf((-12.0 - 3.0 * t) / 20.0) * (t * 300.0).min(1.0);
+        for h in 1..12 {
+            input[i] += a * 0.6 / h as f32 * (2.0 * std::f32::consts::PI * 247.0 * h as f32 * t).sin();
+        }
+    }
+    // 6 dB above the -56 dB noise until the amplitude reaches -44.6 dB (10.8 s).
+    gate_must_not_cut(&input, sr, start, start + (sr * 10.8) as usize);
+}
+
 /// A held note must ring through every sound until it has faded nearly to
 /// the input's hiss; the gate must not chop it while it still sounds.
 #[test]
@@ -799,6 +863,32 @@ fn legato_notes_are_not_cut() {
     gate_must_not_cut(&input, sr, start, start + (sr * 3.0) as usize);
 }
 
+/// The legato test over hum and hiss instead of white hiss: the steady-noise
+/// learning must not take a run of quieter legato notes for noise.
+#[test]
+fn legato_notes_over_hum_are_not_cut() {
+    let sr = 48_000.0;
+    let n = (sr * 6.0) as usize;
+    let start = (sr * 1.0) as usize;
+    let mut input = hum_and_hiss(n, sr, -52.0, 35);
+    // (time, frequency, level dBFS): one picked note then five legato notes
+    // 12-26 dB quieter, each ringing into the next. The quietest is still
+    // 8 dB above the hiss (RMS), so every note must sound in full.
+    let notes = [(0.0, 330.0, -12.0), (0.5, 370.0, -24.0), (1.0, 392.0, -28.0), (1.5, 370.0, -32.0), (2.0, 330.0, -36.0), (2.5, 294.0, -38.0)];
+    for (k, &(t0, f, lv)) in notes.iter().enumerate() {
+        let s0 = start + (sr * t0) as usize;
+        let s1 = notes.get(k + 1).map_or(n, |nx| start + (sr * nx.0) as usize);
+        for i in s0..s1 {
+            let t = (i - s0) as f32 / sr;
+            let a = 10f32.powf((lv - 4.0 * t) / 20.0) * (t * 600.0).min(1.0);
+            for h in 1..10 {
+                input[i] += a * 0.6 / h as f32 * (2.0 * std::f32::consts::PI * f * h as f32 * t).sin();
+            }
+        }
+    }
+    gate_must_not_cut(&input, sr, start, start + (sr * 3.0) as usize);
+}
+
 /// With the gate on, every sound must keep the playing in `start..until`
 /// within 3 dB of the same sound with the gate off.
 fn gate_must_not_cut(input: &[f32], sr: f32, start: usize, until: usize) {
@@ -829,3 +919,4 @@ fn gate_must_not_cut(input: &[f32], sr: f32, start: usize, until: usize) {
     }
     assert!(bad.is_empty(), "notes cut by the gate:\n{}", bad.join("\n"));
 }
+
